@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: CM
- * @Description TODO
+ * @Description 令牌检验
  */
 @Component
 public class TokenGlobalFilter implements GlobalFilter, Ordered {

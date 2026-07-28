@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** @author 周航宇 */
+/** @author CM */
 @EnableFeignClients(basePackages = "com.md.feign")
 @Configuration
 public class OpenFeignConfig {
