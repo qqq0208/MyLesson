@@ -1,17 +1,21 @@
 package com.md.controller;
 
+import com.md.dto.UserInsertDTO;
+import com.md.dto.UserPageDTO;
+import com.md.dto.UserUpdateDTO;
+import com.md.dto.UserUpdatePasswordDTO;
+import com.md.result.Result;
+import com.md.util.EasyExcelUtil;
+import com.md.vo.PageVO;
+import com.md.vo.UserSimpleListVO;
 import com.mybatisflex.core.paginate.Page;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.md.entity.User;
 import com.md.service.UserService;
-import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,79 +31,66 @@ import java.util.List;
 @Tag(name = "用户表接口")
 @RequestMapping("/api/v1/user")
 public class UserController {
-
     @Autowired
     private UserService userService;
 
-    /**
-     * 添加用户表。
-     *
-     * @param user 用户表
-     * @return {@code true} 添加成功，{@code false} 添加失败
-     */
-    @PostMapping("save")
-    @Operation(description="保存用户表")
-    public boolean save(@RequestBody @Parameter(description="用户表")User user) {
-        return userService.save(user);
+    @Operation(summary = "新增 - 单条新增",description = "新增一条用户记录")
+    @PostMapping("/insert")
+    public boolean insert(@Validated @RequestBody UserInsertDTO dto){
+        return userService.insert(dto);
     }
 
-    /**
-     * 根据主键删除用户表。
-     *
-     * @param id 主键
-     * @return {@code true} 删除成功，{@code false} 删除失败
-     */
-    @DeleteMapping("remove/{id}")
-    @Operation(description="根据主键用户表")
-    public boolean remove(@PathVariable @Parameter(description="用户表主键")Long id) {
-        return userService.removeById(id);
+    @Operation(summary = "查询 - 单条查询",description = "按主键查询一条用户记录")
+    @GetMapping("/select/{id}")
+    public User select(@PathVariable("id") Long id){
+        return userService.select(id);
     }
 
-    /**
-     * 根据主键更新用户表。
-     *
-     * @param user 用户表
-     * @return {@code true} 更新成功，{@code false} 更新失败
-     */
-    @PutMapping("update")
-    @Operation(description="根据主键更新用户表")
-    public boolean update(@RequestBody @Parameter(description="用户表主键")User user) {
-        return userService.updateById(user);
+    @Operation(summary = "查询 - 简单列表",description = "查询全部用户记录，仅返回简单信息")
+    @GetMapping("/simpleList")
+    public List<UserSimpleListVO> simpleList(){
+        return userService.simpleList();
     }
 
-    /**
-     * 查询所有用户表。
-     *
-     * @return 所有数据
-     */
-    @GetMapping("list")
-    @Operation(description="查询所有用户表")
-    public List<User> list() {
-        return userService.list();
+    @Operation(summary = "查询 - 条件分页",description = "根据条件（动态） 分页查询用户记录")
+    @GetMapping("/page")
+    public PageVO<User> page(@Validated @ParameterObject UserPageDTO dto){
+        return userService.page(dto);
     }
 
-    /**
-     * 根据用户表主键获取详细信息。
-     *
-     * @param id 用户表主键
-     * @return 用户表详情
-     */
-    @GetMapping("getInfo/{id}")
-    @Operation(description="根据主键获取用户表")
-    public User getInfo(@PathVariable Long id) {
-        return userService.getById(id);
+    @Operation(summary = "修改 - 单条记录",description = "按主键修改一条用户记录")
+    @PutMapping("/update")
+    public boolean update(@Validated @RequestBody UserUpdateDTO dto){
+        return userService.update(dto);
     }
 
-    /**
-     * 分页查询用户表。
-     *
-     * @param page 分页对象
-     * @return 分页对象
-     */
-    @GetMapping("page")
-    @Operation(description="分页查询用户表")
-    public Page<User> page(@Parameter(description="分页信息")Page<User> page) {
-        return userService.page(page);
+    @Operation(summary = "删除 - 单条记录",description = "按主键删除一条用户记录（关联删除用户的角色）")
+    @DeleteMapping("/delete/{id}")
+    public boolean delete(@PathVariable("id") Long id){
+        return userService.delete(id);
     }
 
+    @Operation(summary = "删除 - 批量删除",description = "按主键批量删除用户记录（关联删除用户的角色）")
+    @DeleteMapping("/deleteBatch")
+    public boolean delete(@RequestParam("ids") List<Long> ids){
+        return userService.deleteBatch(ids);
+    }
+
+    @Operation(summary = "修改 - 重置密码",description = "按主键重置用户密码为默认密码 重置成功后 返回默认密码")
+    @PutMapping("/resetPassword/{id}")
+    public Result<String> resetPassword(@PathVariable("id") Long id){
+        return new Result<>(userService.resetPassword(id));
+    }
+
+    @Operation(summary = "修改 - 用户密码",description = "按主键重置用户的登录密码")
+    @PutMapping("/updatePassword")
+    public boolean updatePassword(@Validated @RequestBody UserUpdatePasswordDTO dto){
+        return userService.updatePassword(dto);
+    }
+
+    @Operation(summary = "查询 - 报表打印",description = "打印用户相关的报表数据")
+    @GetMapping("/excel")
+    public void excel(HttpServletResponse response){
+        EasyExcelUtil.download(response,"用户统计表",userService.getExcelData());
+    }
 }

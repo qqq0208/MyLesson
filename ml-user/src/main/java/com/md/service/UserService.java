@@ -1,7 +1,17 @@
 package com.md.service;
 
+import cn.hutool.db.Page;
+import com.md.dto.UserInsertDTO;
+import com.md.dto.UserPageDTO;
+import com.md.dto.UserUpdateDTO;
+import com.md.dto.UserUpdatePasswordDTO;
+import com.md.excel.UserExcelDTO;
+import com.md.vo.PageVO;
+import com.md.vo.UserSimpleListVO;
 import com.mybatisflex.core.service.IService;
 import com.md.entity.User;
+
+import java.util.List;
 
 /**
  * 用户表 服务层。
@@ -10,5 +20,34 @@ import com.md.entity.User;
  * @since v1.0.0
  */
 public interface UserService extends IService<User> {
+    //添加一个用户
+    boolean insert(UserInsertDTO dto);
+
+    //根据主键查询
+    User select(Long id);
+
+    //查询全部（简单查询）
+    List<UserSimpleListVO> simpleList();
+
+    //分页条件查询
+    PageVO<User> page(UserPageDTO dto);
+
+    //修改用户
+    boolean update(UserUpdateDTO dto);
+
+    //删除一个用户
+    boolean delete(Long id);
+
+    //删除多个用户
+    boolean deleteBatch(List<Long> ids);
+
+    //重置用户密码
+    String resetPassword(Long id);
+
+    //修改用户密码
+    boolean updatePassword(UserUpdatePasswordDTO dto);
+
+    //下载数据报表
+    List<UserExcelDTO> getExcelData();
 
 }
