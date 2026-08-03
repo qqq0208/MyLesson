@@ -17,7 +17,7 @@ import com.md.entity.User;
 import com.md.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
