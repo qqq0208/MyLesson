@@ -1,15 +1,14 @@
 package com.md.controller;
 
-import com.md.dto.UserInsertDTO;
-import com.md.dto.UserPageDTO;
-import com.md.dto.UserUpdateDTO;
-import com.md.dto.UserUpdatePasswordDTO;
+import com.md.dto.*;
 import com.md.result.Result;
 import com.md.util.EasyExcelUtil;
+import com.md.vo.LoginVO;
 import com.md.vo.PageVO;
 import com.md.vo.UserSimpleListVO;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.xwpf.usermodel.BreakType;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,10 @@ import com.md.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户表 控制层。
@@ -31,66 +33,123 @@ import java.util.List;
 @Tag(name = "用户表接口")
 @RequestMapping("/api/v1/user")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "新增 - 单条新增",description = "新增一条用户记录")
+    @Operation(summary = "新增 - 单条新增", description = "新增一条用户记录")
     @PostMapping("/insert")
-    public boolean insert(@Validated @RequestBody UserInsertDTO dto){
+    public boolean insert(@Validated @RequestBody UserInsertDTO dto) {
         return userService.insert(dto);
     }
 
-    @Operation(summary = "查询 - 单条查询",description = "按主键查询一条用户记录")
+    @Operation(summary = "查询 - 单条查询", description = "按主键查询一条用户记录")
     @GetMapping("/select/{id}")
-    public User select(@PathVariable("id") Long id){
+    public User select(@PathVariable("id") Long id) {
         return userService.select(id);
     }
 
-    @Operation(summary = "查询 - 简单列表",description = "查询全部用户记录，仅返回简单信息")
+    @Operation(summary = "查询 - 简单列表", description = "查询全部用户记录，仅返回简单信息")
     @GetMapping("/simpleList")
-    public List<UserSimpleListVO> simpleList(){
+    public List<UserSimpleListVO> simpleList() {
         return userService.simpleList();
     }
 
-    @Operation(summary = "查询 - 条件分页",description = "根据条件（动态） 分页查询用户记录")
+    @Operation(summary = "查询 - 条件分页", description = "根据条件（动态） 分页查询用户记录")
     @GetMapping("/page")
-    public PageVO<User> page(@Validated @ParameterObject UserPageDTO dto){
+    public PageVO<User> page(@Validated @ParameterObject UserPageDTO dto) {
         return userService.page(dto);
     }
 
-    @Operation(summary = "修改 - 单条记录",description = "按主键修改一条用户记录")
+    @Operation(summary = "修改 - 单条记录", description = "按主键修改一条用户记录")
     @PutMapping("/update")
-    public boolean update(@Validated @RequestBody UserUpdateDTO dto){
+    public boolean update(@Validated @RequestBody UserUpdateDTO dto) {
         return userService.update(dto);
     }
 
-    @Operation(summary = "删除 - 单条记录",description = "按主键删除一条用户记录（关联删除用户的角色）")
+    @Operation(summary = "删除 - 单条记录", description = "按主键删除一条用户记录（关联删除用户的角色）")
     @DeleteMapping("/delete/{id}")
-    public boolean delete(@PathVariable("id") Long id){
+    public boolean delete(@PathVariable("id") Long id) {
         return userService.delete(id);
     }
 
-    @Operation(summary = "删除 - 批量删除",description = "按主键批量删除用户记录（关联删除用户的角色）")
+    @Operation(summary = "删除 - 批量删除", description = "按主键批量删除用户记录（关联删除用户的角色）")
     @DeleteMapping("/deleteBatch")
-    public boolean delete(@RequestParam("ids") List<Long> ids){
+    public boolean delete(@RequestParam("ids") List<Long> ids) {
         return userService.deleteBatch(ids);
     }
 
-    @Operation(summary = "修改 - 重置密码",description = "按主键重置用户密码为默认密码 重置成功后 返回默认密码")
+    @Operation(summary = "修改 - 重置密码", description = "按主键重置用户密码为默认密码 重置成功后 返回默认密码")
     @PutMapping("/resetPassword/{id}")
-    public Result<String> resetPassword(@PathVariable("id") Long id){
+    public Result<String> resetPassword(@PathVariable("id") Long id) {
         return new Result<>(userService.resetPassword(id));
     }
 
-    @Operation(summary = "修改 - 用户密码",description = "按主键重置用户的登录密码")
+    @Operation(summary = "修改 - 用户密码", description = "按主键重置用户的登录密码")
     @PutMapping("/updatePassword")
-    public boolean updatePassword(@Validated @RequestBody UserUpdatePasswordDTO dto){
+    public boolean updatePassword(@Validated @RequestBody UserUpdatePasswordDTO dto) {
         return userService.updatePassword(dto);
     }
 
-    @Operation(summary = "查询 - 报表打印",description = "打印用户相关的报表数据")
+    @Operation(summary = "查询 - 报表打印", description = "打印用户相关的报表数据")
     @GetMapping("/excel")
-    public void excel(HttpServletResponse response){
-        EasyExcelUtil.download(response,"用户统计表",userService.getExcelData());
+    public void excel(HttpServletResponse response) {
+        EasyExcelUtil.download(response, "用户统计表", userService.getExcelData());
+    }
+
+    @Operation(summary = "修改 - 上传头像", description = "按主键修改用户的头像")
+    @PostMapping("/uploadAvatar/{id}")
+    public Result<String> uploadAvatar(@RequestParam("avatarFile")MultipartFile avatarFile,
+                                       @PathVariable("id") Long id){
+        return new Result<>(userService.uploadAvatar(avatarFile,id));
+    }
+
+    @Operation(summary = "查询 - 解绑验证码", description = "获取旧手机号码的解绑验证码")
+    @GetMapping("/getUnboundVcode/{id}")
+    public Result<String> getUnboundVcode(@PathVariable("id") Long id){
+        return new Result<>(userService.getUnboundVCode(id));
+    }
+
+    @Operation(summary = "校验 - 解绑验证码", description = "校验旧手机号码的解绑验证码")
+    @GetMapping("/checkUnboundVcode/{id}/{code}")
+    public boolean checkUnboundVcode(@PathVariable("id") Long id,@PathVariable("code") String code){
+        return userService.checkUnboundVCode(id,code);
+    }
+
+    @Operation(summary = "查询 - 绑定验证码", description = "获取新手机号码的解绑验证码")
+    @GetMapping("/getBoundVcode/{phone}")
+    public Result<String> getBoundVcode(@PathVariable("phone") String phone){
+        return new Result<>(userService.getBoundVCode(phone));
+    }
+
+    @Operation(summary = "修改 - 手机号码", description = "修改用户的手机号码")
+    @PutMapping("/updatePhone")
+    public boolean updatePhone(@Validated @RequestBody UserUpdatePhoneDTO dto){
+        return userService.updatePhone(dto);
+    }
+
+    @Operation(summary = "登录 - 账号密码", description = "根据账号密码登录")
+    @PostMapping("/loginByAccount")
+    public LoginVO loginByAccount(@Validated @RequestBody LoginByAccountDTO dto){
+        return userService.loginByAccount(dto);
+    }
+
+    @Operation(summary = "查询 - 登录验证码", description = "获取手机号的验证码")
+    @GetMapping("/getVcode/{phone}")
+    public Result<String> getVcode(@PathVariable("phone") String phone){
+        return new Result<>(userService.getVcode(phone));
+    }
+
+    @Operation(summary = "登录 - 手机号码", description = "根据手机号验证码登录")
+    @PostMapping("/loginByPhone")
+    public LoginVO loginByPhone(@Validated @RequestBody LoginByPhoneDTO dto){
+        return userService.loginByPhone(dto);
+    }
+
+    @Operation(summary = "查询 - 统计数据", description = "查询用户相关的统计数据")
+    @GetMapping("/statistics")
+    public Map<String,Object> statistics(){
+        return userService.statistics();
     }
 }
+
