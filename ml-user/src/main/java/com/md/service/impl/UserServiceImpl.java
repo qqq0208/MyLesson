@@ -574,11 +574,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
             result.setToken(tokenKey);
             return result;
         }
-        //根据菜单ID的集合 查询菜单表 返回菜单数据 （只查询父菜单）
+        //根据菜单ID的集合 查询菜单表 返回菜单数据 （只查询父菜单以及关联的一级子菜单）
         List<Menu> menuList = QueryChain.of(menuMapper)
                 .where(MENU.ID.in(meunIds))
                 .and(MENU.PID.eq(ML.Menu.ROOT_ID))
                 .orderBy(MENU.IDX.asc(), MENU.ID.desc())
+                .withRelations()
                 .list();
 
         //构建完整的返回数据

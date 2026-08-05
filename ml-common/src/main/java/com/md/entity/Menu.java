@@ -1,13 +1,12 @@
 package com.md.entity;
 
-import com.mybatisflex.annotation.Column;
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.KeyType;
-import com.mybatisflex.annotation.Table;
+import com.mybatisflex.annotation.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import java.io.Serial;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -100,5 +99,10 @@ public class Menu implements Serializable {
      */
     @Schema(description = "修改时间")
     private LocalDateTime updated;
+    /** 菜单[1] : 父菜单[1] */
+    @RelationOneToOne(selfField = "pid", targetField = "id")
+    Menu parentMenu;
 
+    @RelationOneToMany(selfField = "id",targetField = "pid",orderBy = "idx")
+    private List<Menu> subMenus;
 }

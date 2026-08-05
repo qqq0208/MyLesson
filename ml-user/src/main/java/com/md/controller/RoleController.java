@@ -1,17 +1,17 @@
 package com.md.controller;
 
+import com.md.dto.RoleInsertDTO;
+import com.md.dto.RolePageDTO;
+import com.md.dto.RoleUpdateDTO;
+import com.md.vo.PageVO;
+import com.md.vo.RoleSimpleListVO;
 import com.mybatisflex.core.paginate.Page;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.md.entity.Role;
 import com.md.service.RoleService;
-import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,75 +31,57 @@ public class RoleController {
     @Autowired
     private RoleService roleService;
 
-    /**
-     * 添加角色表。
-     *
-     * @param role 角色表
-     * @return {@code true} 添加成功，{@code false} 添加失败
-     */
-    @PostMapping("save")
-    @Operation(description="保存角色表")
-    public boolean save(@RequestBody @Parameter(description="角色表")Role role) {
-        return roleService.save(role);
+    @PostMapping("/insert")
+    @Operation(summary = "新增 - 单条数据", description = "新增一条角色记录")
+    public boolean save(@Validated @RequestBody RoleInsertDTO dto) {
+        return roleService.insert(dto);
     }
 
-    /**
-     * 根据主键删除角色表。
-     *
-     * @param id 主键
-     * @return {@code true} 删除成功，{@code false} 删除失败
-     */
-    @DeleteMapping("remove/{id}")
-    @Operation(description="根据主键角色表")
-    public boolean remove(@PathVariable @Parameter(description="角色表主键")Long id) {
-        return roleService.removeById(id);
+    @Operation(summary = "查询 - 单条查询", description = "按主键查询一条角色记录")
+    @GetMapping("/select/{id}")
+    public Role select(@PathVariable("id") Long id) {
+        return roleService.select(id);
     }
 
-    /**
-     * 根据主键更新角色表。
-     *
-     * @param role 角色表
-     * @return {@code true} 更新成功，{@code false} 更新失败
-     */
-    @PutMapping("update")
-    @Operation(description="根据主键更新角色表")
-    public boolean update(@RequestBody @Parameter(description="角色表主键")Role role) {
-        return roleService.updateById(role);
+    @Operation(summary = "查询 - 简单列表", description = "查询全部角色记录，仅返回简单信息")
+    @GetMapping("/simpleList")
+    public List<RoleSimpleListVO> simpleList() {
+        return roleService.simpleList();
     }
 
-    /**
-     * 查询所有角色表。
-     *
-     * @return 所有数据
-     */
-    @GetMapping("list")
-    @Operation(description="查询所有角色表")
-    public List<Role> list() {
-        return roleService.list();
+    @Operation(summary = "查询 - 分页查询", description = "分页查询角色记录")
+    @GetMapping("/page")
+    public PageVO<Role> page(@Validated @ParameterObject RolePageDTO dto) {
+        return roleService.page(dto);
     }
 
-    /**
-     * 根据角色表主键获取详细信息。
-     *
-     * @param id 角色表主键
-     * @return 角色表详情
-     */
-    @GetMapping("getInfo/{id}")
-    @Operation(description="根据主键获取角色表")
-    public Role getInfo(@PathVariable Long id) {
-        return roleService.getById(id);
+    @Operation(summary = "修改 - 修改单条", description = "按主键修改记录")
+    @PutMapping("/update")
+    public boolean update(@Validated @RequestBody RoleUpdateDTO dto) {
+        return roleService.update(dto);
     }
 
-    /**
-     * 分页查询角色表。
-     *
-     * @param page 分页对象
-     * @return 分页对象
-     */
-    @GetMapping("page")
-    @Operation(description="分页查询角色表")
-    public Page<Role> page(@Parameter(description="分页信息")Page<Role> page) {
-        return roleService.page(page);
+    @Operation(summary = "删除 - 删除单条", description = "按主键删除记录")
+    @DeleteMapping("/delete/{id}")
+    public boolean delete(@PathVariable("id") Long id) {
+        return roleService.delete(id);
     }
 
+    @Operation(summary = "删除 - 批量删除", description = "按主键批量删除记录")
+    @DeleteMapping("/deleteBatch")
+    public boolean deleteBatch(@RequestParam("ids") List<Long> ids) {
+        return roleService.deleteBatch(ids);
+    }
+
+    @Operation(summary = "查询 - 用户角色ID列表", description = "按用户ID查询用户全部角色的ID列表")
+    @GetMapping("/listRoleIdsByUserId/{userId}")
+    public List<Long> listRoleIdsByUserId(@PathVariable("userId") Long userId) {
+        return roleService.listRoleIdsByUserId(userId);
+    }
+
+    @Operation(summary = "修改 - 用户角色", description = "按用户ID修改用户的角色列表")
+    @PutMapping("/updateRolesByUserId")
+    public boolean updateRolesByUserId(@RequestParam("userId") Long userId, @RequestParam("roleIds") List<Long> roleIds) {
+        return roleService.updateRolesByUserId(userId, roleIds);
+    }
 }
