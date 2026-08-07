@@ -1,6 +1,6 @@
 package com.md.dto;
 
-import com.md.dto.PageDTO;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
