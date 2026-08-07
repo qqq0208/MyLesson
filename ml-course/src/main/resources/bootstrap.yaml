@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: ml-course
+  cloud:
+    nacos:
+      config:
+        file-extension: yaml
+        server-addr: 192.168.48.130:8848
+        group: ml-group
+        shared-configs:
+          - group: ml-group
+            data-id: common-config.yaml
+            refresh: true
+  profiles:
+    active: dev

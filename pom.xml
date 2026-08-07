@@ -9,6 +9,7 @@
       <module>ml-gateway</module>
       <module>ml-generator</module>
     <module>ml-user</module>
+    <module>ml-course</module>
   </modules>
   <version>1.0-SNAPSHOT</version>
   <name>MyLesson Maven Webapp</name>
